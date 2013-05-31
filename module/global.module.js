@@ -337,10 +337,28 @@ modules.global = {
 			var hidden_post_form = '<form method="POST" action="https://s.gks.gs/img/?ak=' + authKey + '" enctype="multipart/form-data"><input type="file" name="photo" id="photo" style="margin-left: 10px;" accept="image/*"><input type="hidden" name="MAX_FILE_SIZE" value="5242880"><input type="hidden" name="ak" value="' + authKey + '"></form>';
 			var hidden_get_form = '<form method="GET" action="https://s.gks.gs/img/extern.php"><input id="url" type="text" name="c" value=""><input type="hidden" name="ak" value="' + authKey + '"></form>';
 
-			var send_img = function(photo) {
+			var send_img = function(form) {
 				dbg("[multi_upload] Sending img in POST data");
-				var iframe = $(hidden_post_form).wrapInner('<iframe style="display: hidden;"></iframe>').find("#photo").val(photo);
-				iframe.submit();
+				//var form = $(hidden_post_form);
+				//var iframe = form.wrap('<iframe style="display: none;" />');
+				//$("#navigation").append(iframe);
+				//form.find("#photo").val(photo);
+				//form.submit();
+
+				var formData = new FormData(form[0]);
+				$.ajax({
+					type: 'POST',
+					url: "https://s.gks.gs/img/?ak=" + authKey,
+					data: formData,
+					contentType: false,
+					processData: false,
+					success: function(data) {
+						dbg("[multi_upload] POST sending success");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						dbg("[multi_upload] Failed " + textStatus + " # " + errorThrown);
+					}
+				});
 			};
 
 			var url_img = function(url) {
@@ -361,24 +379,25 @@ modules.global = {
 				});
 			};
 
-			var multi_upload_frame_data = '<form method="post" action="https://s.gks.gs/img/?ak=' + authKey + '" id="fileupload" enctype="multipart/form-data">' +
+			var multi_upload_frame_data = '<form id="fileupload">' +
 				'<p>Depuis un fichier</p>' +
-				'<div class="slidefile">' +
+				'<div>' +
 					'<p>Votre Image' +
 						'<input type="file" name="photo" id="photo" style="margin-left: 10px;" accept="image/*">' +
 					'</p>' +
 					'<p class="hidden"><input type="hidden" name="MAX_FILE_SIZE" value="5242880"></p>' +
-					'<p class="center"><input type="submit" name="envoi" value=" Uploader Cette Image "></p>' +
+					'<input type="hidden" name="ak" value="' + authKey + '">' +
+					'<p class="center"><input type="submit" value=" Uploader Cette Image "></p>' +
 				'</div>' +
 			'</form>';
 
-			multi_upload_frame_data += '<form method="get" action="https://s.gks.gs/img/extern.php" id="urlupload">' +
+			multi_upload_frame_data += '<form id="urlupload">' +
 				'<p>Depuis une URL</p>' +
-				'<div class="slideurl">' +
+				'<div>' +
 					'<p>Votre URL' +
-						'<input type="text" name="c" id="url" value="">' +
+						'<input type="text" id="url" value="">' +
 					'</p>' +
-					'<p class="center"><input type="submit" name="envoi" value=" Télécharger à partir de l\'URL "></p>' +
+					'<p class="center"><input type="submit" value=" Télécharger à partir de l\'URL "></p>' +
 				'</div>' +
 			'</form>';
 
@@ -387,7 +406,13 @@ modules.global = {
 			appendFrame(multi_upload_frame);
 
 			$("#fileupload").on("submit", function() {
-				send_img($(this).find("#photo").val());
+				try {
+					send_img($(this));
+				}
+				catch(e) {
+					dbg("[multi_upload] " + e.message);
+					console.log(e.stack);
+				}
 				return false;
 			});
 
@@ -425,8 +450,6 @@ modules.global = {
 			}
 			return false;
 		});
-
-
 
 		listenToCtrlEnter();
 		listenToBBCodeShortcuts();
