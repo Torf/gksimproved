@@ -334,17 +334,17 @@ modules.global = {
 			dbg("[multi_upload] Building frame");
 			var authKey = utils.getAuthkey();
 
-			var hidden_post_img = '<form method="post" action="https://s.gks.gs/img/?ak=' + authKey + '" enctype="multipart/form-data"><input type="file" name="photo" id="photo" style="margin-left: 10px;" accept="image/*"><input type="hidden" name="MAX_FILE_SIZE" value="5242880"><input type="hidden" name="ak" value="' + authKey + '"></form>';
-			var hidden_get_img = '<form method="get" action="https://s.gks.gs/img/extern.php"><input id="url" type="text" name="c" value=""><input type="hidden" name="ak" value="' + authKey + '"></form>';
+			var hidden_post_form = '<form method="POST" action="https://s.gks.gs/img/?ak=' + authKey + '" enctype="multipart/form-data"><input type="file" name="photo" id="photo" style="margin-left: 10px;" accept="image/*"><input type="hidden" name="MAX_FILE_SIZE" value="5242880"><input type="hidden" name="ak" value="' + authKey + '"></form>';
+			var hidden_get_form = '<form method="GET" action="https://s.gks.gs/img/extern.php"><input id="url" type="text" name="c" value=""><input type="hidden" name="ak" value="' + authKey + '"></form>';
 
 			var send_img = function(photo) {
-				dbg("[multi_upload] Sending post data");
-				var iframe = $(hidden_post_img).wrapInner('<iframe style="display: hidden;"></iframe>').find("#photo").val(photo);
+				dbg("[multi_upload] Sending img in POST data");
+				var iframe = $(hidden_post_form).wrapInner('<iframe style="display: hidden;"></iframe>').find("#photo").val(photo);
 				iframe.submit();
 			};
 
 			var url_img = function(url) {
-				dbg("[multi_upload] Sending url");
+				dbg("[multi_upload] Sending img url in GET data");
 				$.ajax({
 					type: 'GET',
 					url: "https://s.gks.gs/img/extern.php",
@@ -354,35 +354,30 @@ modules.global = {
 					},
 					success: function(data) {
 						dbg("[multi_upload] Url sending success");
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						dbg("[multi_upload] Failed " + textStatus + " # " + errorThrown);
 					}
 				});
 			};
 
 			var multi_upload_frame_data = '<form method="post" action="https://s.gks.gs/img/?ak=' + authKey + '" id="fileupload" enctype="multipart/form-data">' +
-				'<p class="publiclabel">' +
-					'<label class="lstart">Depuis un fichier</label>' +
-				'</p>' +
+				'<p>Depuis un fichier</p>' +
 				'<div class="slidefile">' +
-					'<p class="publiclabel">' +
-						'<label class="lstart">Votre Image</label>' +
-						'<label class="lend"><input type="file" name="photo" id="photo" style="margin-left: 10px;" accept="image/*"></label>' +
+					'<p>Votre Image' +
+						'<input type="file" name="photo" id="photo" style="margin-left: 10px;" accept="image/*">' +
 					'</p>' +
 					'<p class="hidden"><input type="hidden" name="MAX_FILE_SIZE" value="5242880"></p>' +
-					'<p class="hidden"><input type="hidden" name="ak" value="' + authKey + '"></p>' +
 					'<p class="center"><input type="submit" name="envoi" value=" Uploader Cette Image "></p>' +
 				'</div>' +
 			'</form>';
 
 			multi_upload_frame_data += '<form method="get" action="https://s.gks.gs/img/extern.php" id="urlupload">' +
-				'<p class="publiclabel">' +
-					'<label class="lstart">Depuis une URL</label>' +
-				'</p>' +
+				'<p>Depuis une URL</p>' +
 				'<div class="slideurl">' +
-					'<p class="publiclabel">' +
-						'<label class="lstart">Votre URL</label>' +
-						'<label class="lend"><input type="text" name="c" id="url" value=""></label>' +
+					'<p>Votre URL' +
+						'<input type="text" name="c" id="url" value="">' +
 					'</p>' +
-					'<p class="hidden"><input type="hidden" name="ak" value="' + authKey + '"></p>' +
 					'<p class="center"><input type="submit" name="envoi" value=" Télécharger à partir de l\'URL "></p>' +
 				'</div>' +
 			'</form>';
